@@ -2,15 +2,14 @@ import streamlit as st
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import make_pipeline
 import joblib
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-def train_and_save_model():
-    training_path = '../data/twitter_training.csv'
-    validation_path = '../data/twitter_validation.csv'
-    
+def train_and_save_model(training_path, validation_path):
     df_train = pd.read_csv(training_path, sep=',', quotechar='"', header=None, names=['id', 'game', 'sentiment', 'text'])
     df_valid = pd.read_csv(validation_path, sep=',', quotechar='"', header=None, names=['id', 'game', 'sentiment', 'text'])
 
@@ -37,7 +36,7 @@ def train_and_save_model():
     grid_search.fit(X_train, y_train)
 
     accuracy = grid_search.score(X_valid, y_valid)
-    st.write(f'Accuracy on validation set: {accuracy}')
+    st.write(f'Précision sur l\'ensemble de validation : {accuracy}')
 
     best_model = grid_search.best_estimator_
     model_path = os.path.join('..', 'api', 'model.joblib')
@@ -45,35 +44,68 @@ def train_and_save_model():
     joblib.dump(best_model.named_steps['logisticregression'], model_path)
     joblib.dump(best_model.named_steps['tfidfvectorizer'], vectorizer_path)
 
-    st.success("Best model and vectorizer saved successfully.")
+    st.success("Meilleur modèle et vectoriseur sauvegardés avec succès.")
+
+    return df_valid
+
+def plot_sentiment_distribution(data):
+    sentiment_counts = data['sentiment'].value_counts().reset_index()
+    sentiment_counts.columns = ['sentiment', 'count']
+    
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.barplot(data=sentiment_counts, x='sentiment', y='count', palette='viridis', ax=ax, hue='sentiment', dodge=False, legend=False)
+    ax.set_title('Distribution des Sentiments')
+    ax.set_xlabel('Sentiment')
+    ax.set_ylabel('Nombre de Tweets')
+    
+    st.pyplot(fig)
 
 def main():
     st.title("Twitter Sentiment Analysis App")
 
-    with open("../static/style.css", "r") as f:
-        css = f.read()
+    current_dir = os.path.dirname(__file__)
+    training_path = os.path.join(current_dir, '..', 'data', 'twitter_training.csv')
+    validation_path = os.path.join(current_dir, '..', 'data', 'twitter_validation.csv')
 
-    st.markdown(
-        f"""
-        <style>
-            {css}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    if 'model_trained' not in st.session_state:
+        st.session_state.model_trained = False
+    if 'df_valid' not in st.session_state:
+        st.session_state.df_valid = None
+    if 'vectorizer_path' not in st.session_state:
+        st.session_state.vectorizer_path = None
+    if 'model_path' not in st.session_state:
+        st.session_state.model_path = None
 
-    if st.button("Train Model"):
-        train_and_save_model()
+    st.info("Cliquez sur le bouton pour entraîner et sauvegarder le modèle.")
 
-    if st.button("Start API"):
-        st.info("API started successfully.")
+    if st.button("Entraîner et sauvegarder le modèle"):
+        st.session_state.df_valid = train_and_save_model(training_path, validation_path)
+        st.session_state.model_trained = True
+        st.session_state.vectorizer_path = os.path.join('..', 'api', 'vectorizer.joblib')
+        st.session_state.model_path = os.path.join('..', 'api', 'model.joblib')
 
-    tweet = st.text_input("Enter a tweet:")
+    # Afficher la distribution des sentiments uniquement si le modèle a été entraîné
+    if st.session_state.model_trained:
+        if st.button("Afficher la distribution des sentiments"):
+            plot_sentiment_distribution(st.session_state.df_valid)
 
-    if st.button("Analyze"):
-        api_url = "http://localhost:8000/predict/"
-        sentiment = 1
-        st.write("Sentiment:", "Positive" if sentiment == 1 else "Negative")
+    tweet = st.text_input("Entrer un tweet :")
+
+    if st.button("Analyser"):
+        if tweet:
+            # Charger le modèle et le vectorizer
+            if st.session_state.model_trained:
+                model = joblib.load(st.session_state.model_path)
+                vectorizer = joblib.load(st.session_state.vectorizer_path)
+                
+                # Prétraitement du texte
+                text_vectorized = vectorizer.transform([tweet])
+
+                # Prédiction
+                sentiment = model.predict(text_vectorized)[0]
+                st.write("Sentiment:", sentiment)
+            else:
+                st.error("Modèle introuvable. Veuillez d'abord entraîner le modèle.")
 
 if __name__ == "__main__":
     main()
