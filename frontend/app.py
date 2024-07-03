@@ -84,7 +84,6 @@ def main():
         st.session_state.vectorizer_path = os.path.join('..', 'api', 'vectorizer.joblib')
         st.session_state.model_path = os.path.join('..', 'api', 'model.joblib')
 
-    # Afficher la distribution des sentiments uniquement si le modèle a été entraîné
     if st.session_state.model_trained:
         if st.button("Afficher la distribution des sentiments"):
             plot_sentiment_distribution(st.session_state.df_valid)
@@ -93,15 +92,12 @@ def main():
 
     if st.button("Analyser"):
         if tweet:
-            # Charger le modèle et le vectorizer
             if st.session_state.model_trained:
                 model = joblib.load(st.session_state.model_path)
                 vectorizer = joblib.load(st.session_state.vectorizer_path)
                 
-                # Prétraitement du texte
                 text_vectorized = vectorizer.transform([tweet])
 
-                # Prédiction
                 sentiment = model.predict(text_vectorized)[0]
                 st.write("Sentiment:", sentiment)
             else:
