@@ -21,43 +21,29 @@ Ce projet utilise un jeu de données de tweets pour analyser les sentiments (pos
 1. Clonez le dépôt :
 
    ```sh
-   git clone https://github.com/votre-utilisateur/twitter-sentiment-analysis.git
-   cd twitter-sentiment-analysis
+   git clone https://github.com/Mchl37 Twitter-Sentiment-Analysis.git
+   cd Twitter-Sentiment-Analysis
    ```
 
-2. Installez les dépendances :
+2. Installez les dépendances directement :
 
    ```sh
+   pip install -r requirements.txt
+   ```
+
+   ou avec un environnement virtuel :
+   (venv)[https://docs.python.org/3/library/venv.html]
+
+   ```sh
+   python3 -m venv venv
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
 3. Lancez l'application :
    ```sh
    python src/app.py
-   ```
-
-## Déploiement
-
-Pour déployer l'application sur Heroku, suivez ces étapes :
-
-1. Connectez-vous à Heroku :
-
-   ```sh
-   heroku login
-   ```
-
-2. Créez une nouvelle application :
-
-   ```sh
-   heroku create votre-nom-dapplication
-   ```
-
-3. Déployez l'application :
-   ```sh
-   git add .
-   git commit -m "Initial commit"
-   heroku git:remote -a votre-nom-dapplication
-   git push heroku master
+   uvicorn api:app --reload
    ```
 
 ## Membres de l'équipe
