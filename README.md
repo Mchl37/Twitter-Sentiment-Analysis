@@ -10,11 +10,8 @@ Ce projet utilise un jeu de données de tweets pour analyser les sentiments (pos
 - `notebooks/`: Contient les notebooks Jupyter pour le nettoyage, l'analyse et la modélisation des données.
 - `src/`: Contient les scripts Python pour l'application web.
 - `static/`: Contient le fichier CSS pour styliser l'application web.
-- `templates/`: Contient le fichier HTML pour l'interface utilisateur.
-- `Procfile`: Indique à Heroku comment exécuter l'application.
 - `requirements.txt`: Liste des dépendances Python.
 - `README.md`: Documentation du projet.
-- `LICENSE`: Fichier de licence.
 
 ## Installation
 
@@ -41,9 +38,15 @@ Ce projet utilise un jeu de données de tweets pour analyser les sentiments (pos
    ```
 
 3. Lancez l'application :
+
    ```sh
-   python src/app.py
-   uvicorn api:app --reload
+   uvicorn api.main:app --reload
+   ```
+
+   Dans un autre terminal
+
+   ```sh
+   streamlit run frontend/app.py
    ```
 
 ## Membres de l'équipe
