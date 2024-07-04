@@ -7,7 +7,6 @@ Ce projet utilise un jeu de données de tweets pour analyser les sentiments (pos
 ## Structure du dépôt
 
 - `data/`: Contient les données brutes et nettoyées.
-- `notebooks/`: Contient les notebooks Jupyter pour le nettoyage, l'analyse et la modélisation des données.
 - `api/`: Contient les scripts Python pour l'application web.
 - `static/`: Contient le fichier CSS pour styliser l'application web.
 - `requirements.txt`: Liste des dépendances Python.
